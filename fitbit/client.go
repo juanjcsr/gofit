@@ -42,11 +42,12 @@ var fitbitConf = &oauth2.Config{
 	},
 }
 
-type FitBitClient struct {
+type Client struct {
 	Client *http.Client
+	User   *UserService
 }
 
-func NewFitbitClient() (*FitBitClient, error) {
+func NewFitbitClient() (*Client, error) {
 	prefs := new(Preferences)
 	if _, err := prefs.Open(); err != nil {
 		fmt.Printf("error opening prefs %v", err)
@@ -83,7 +84,10 @@ func NewFitbitClient() (*FitBitClient, error) {
 	// transport := &oauth2.Transport{Source: ts}
 
 	client := fitbitConf.Client(oauth2.NoContext, token)
-	fClient := &FitBitClient{Client: client}
+	fClient := &Client{
+		Client: client,
+		User:   newUserService(client),
+	}
 	return fClient, nil
 }
 
