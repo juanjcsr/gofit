@@ -12,33 +12,41 @@ type UserHolder struct {
 
 // User represents a Fitbit user
 type User struct {
-	AboutMe                string `json:"aboutMe"`
+	Age                    int
+	AutoStrideEnabled      bool
 	Avatar                 string
 	Avatar150              string
-	City                   string
+	AverageDailySteps      int16
 	ClockTimeDisplayFormat string
+	Corporate              bool
+	CorporateAdmin         bool
 	Country                string
 	DateOfBirth            string
 	DisplayName            string
+	DisplayNameSetting     string
 	DistanceUnit           string
-	EncodedID              string
-	FoodsLocale            string
-	FullName               string
-	Gender                 string
-	GlucoseUnit            string
-	// Heigth                 string
-	HeightUnit          string
-	Locale              string
-	MemberSince         string
-	OffsetFromUTCMillis string
-	StartDayOfWeek      string
-	State               string
-	StrideLengthRunning string
-	StrideLengthWalking string
-	Timezone            string
-	WaterUnit           string
-	// Weight                 string
-	WeightUnit string
+	ID                     string `json:"encodedID"`
+	//Features
+	FoodsLocale             string
+	FullName                string
+	Gender                  string
+	GlucoseUnit             string
+	Heigth                  int16
+	HeightUnit              string
+	Locale                  string
+	MemberSince             string
+	OffsetFromUTCMillis     int64
+	StartDayOfWeek          string
+	StrideLengthRunning     float32
+	StrideLengthRunningType string
+	StrideLengthWalking     float32
+	StrideLengthWalkingType string
+	SwimUnit                string
+	Timezone                string
+	WaterUnit               string
+	WaterUnitName           string
+	Weight                  int
+	WeightUnit              string
 }
 
 const userEndpoint = "https://api.fitbit.com/1/user/-/profile.json"
@@ -60,11 +68,16 @@ func (u *UserService) GetCurrentUser() (*User, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	uh := new(UserHolder)
-	// user := new(User)
-	if err := json.NewDecoder(resp.Body).Decode(uh); err != nil {
+	// json.NewDecoder(resp.Body)
+	var uh UserHolder
+	// var user User
+	if err := json.NewDecoder(resp.Body).Decode(&uh); err != nil {
 		return nil, fmt.Errorf("user endpoint: %v", err)
 	}
-	// fmt.Printf("USUARIO: %v", user)
+	// respD, err := ioutil.ReadAll(resp.Body)
+	// fmt.Printf("err: %v", Re)
+	fmt.Printf("user: %v", uh)
+
+	// return &uh.User, nil
 	return &uh.User, nil
 }

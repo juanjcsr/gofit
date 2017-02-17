@@ -88,6 +88,7 @@ func NewFitbitClient() (*Client, error) {
 		Client: client,
 		User:   newUserService(client),
 	}
+	fmt.Printf("TOKEN: %v\n", token.AccessToken)
 	return fClient, nil
 }
 
@@ -99,6 +100,7 @@ func handleOauth(w http.ResponseWriter, r *http.Request) {
 		// fmt.Printf("Failed code exchanging with '%s'\n", err)
 		chanError <- fmt.Errorf("failed code exchanging with '%s'", err)
 	}
+	fmt.Printf("REFRESH TIME: %v\n", token.Expiry)
 
 	oauthCode <- *token
 }
@@ -123,7 +125,9 @@ func getFitBitKeys(prefs *Preferences) (*oauth2.Token, error) {
 	tk.TokenType = tokenType
 	tk.RefreshToken = refreshToken
 	// expT.Add(time.Duration(expTime) * time.Second)
-	tk.Expiry, _ = time.Parse("2006-01-02 15:04:05.999999999 -0600 CST", expiry)
-
+	tk.Expiry, _ = time.Parse("2006-01-02 15:04:05 -0700 MST", expiry)
+	// fmt.Printf("REFRESH EXPIRY ERR: %v\n", err)
+	// fmt.Printf("REFRESH EXPIRY DB RAW: %v\n", expiry)
+	// fmt.Printf("REFRESH EXPRIY DB XXX: %v\n", tk.Expiry)
 	return tk, nil
 }
