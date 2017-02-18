@@ -43,10 +43,37 @@ type User struct {
 	StrideLengthWalkingType string
 	SwimUnit                string
 	Timezone                string
+	TopBadges               []Badge
 	WaterUnit               string
 	WaterUnitName           string
 	Weight                  int
 	WeightUnit              string
+}
+
+// Badge represents a Badge from the User
+type Badge struct {
+	BadgeGradientEndColor   string `json:"badgeGradientEndColor"`
+	BadgeGradientStartColor string `json:"badgeGradientStartColor"`
+	BadgeType               string `json:"badgeType"`
+	Category                string `json:"category"`
+	Cheers                  []interface{}
+	DateTime                string `json:"dateTime"`
+	Description             string `json:"description"`
+	BadgeID                 string `json:"encodedId"`
+	Image100px              string `json:"image100px"`
+	Image125px              string `json:"image100px"`
+	Image300px              string `json:"image100px"`
+	Image50px               string `json:"image100px"`
+	Image75x                string `json:"image100px"`
+	MarketingDescription    string `json:"marketingDescription"`
+	MobileDescription       string `json:"mobileDescription"`
+	Name                    string `json:"name"`
+	ShareImage              string `json:"shareImage"`
+	ShareText               string `json:"shareText"`
+	ShortDescription        string `json:"shortDescription"`
+	ShortName               string `json:"shortName"`
+	TimesArchived           int16  `json:"timesArchived"`
+	Value                   int16  `json:"value"`
 }
 
 const userEndpoint = "https://api.fitbit.com/1/user/-/profile.json"
