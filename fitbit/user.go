@@ -76,7 +76,11 @@ type Badge struct {
 	Value                   int16  `json:"value"`
 }
 
-const userEndpoint = "https://api.fitbit.com/1/user/-/profile.json"
+const (
+	baseUserEndpoint    = "https://api.fitbit.com/1/user/"
+	userParams          = "profile.json"
+	currentUserEndpoint = "https://api.fitbit.com/1/user/-/profile.json"
+)
 
 // UserService holds the requests for the user endpoints
 type UserService struct {
@@ -89,8 +93,14 @@ func newUserService(client *http.Client) *UserService {
 	return userService
 }
 
-func (u *UserService) GetCurrentUser() (*User, error) {
-	resp, err := u.client.Get(userEndpoint)
+func (u *UserService) GetUser(userID string) (*User, error) {
+	var url string
+	if userID != "" {
+		url = baseUserEndpoint + userID + userParams
+	} else {
+		url = currentUserEndpoint
+	}
+	resp, err := u.client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -101,10 +111,6 @@ func (u *UserService) GetCurrentUser() (*User, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&uh); err != nil {
 		return nil, fmt.Errorf("user endpoint: %v", err)
 	}
-	// respD, err := ioutil.ReadAll(resp.Body)
-	// fmt.Printf("err: %v", Re)
-	fmt.Printf("user: %v", uh)
-
 	// return &uh.User, nil
 	return &uh.User, nil
 }
