@@ -75,14 +75,13 @@ func newActivityService(authedClient *http.Client) *ActivityService {
 	return theActivityService
 }
 
-func (a *ActivityService) GetActivitySummary(user string) (*ActivitiesHolder, error) {
+func (a *ActivityService) GetActivitySummary(user string, date string) (*ActivitiesHolder, error) {
 	var url string
 	if user != "" {
-		url = fmt.Sprintf(activitiesBaseEndpoint, user, "2017-02-16")
+		url = fmt.Sprintf(activitiesBaseEndpoint, user, date)
 	} else {
-		url = fmt.Sprintf(activitiesBaseEndpoint, "-", "2017-02-13")
+		url = fmt.Sprintf(activitiesBaseEndpoint, "-", date)
 	}
-	fmt.Printf("URL: %s\n", url)
 	resp, err := a.authedClient.Get(url)
 	defer resp.Body.Close()
 	if err != nil {
