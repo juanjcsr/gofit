@@ -43,8 +43,9 @@ var fitbitConf = &oauth2.Config{
 }
 
 type Client struct {
-	Client *http.Client
-	User   *UserService
+	Client    *http.Client
+	User      *UserService
+	Acivities *ActivityService
 }
 
 func NewFitbitClient() (*Client, error) {
@@ -85,8 +86,9 @@ func NewFitbitClient() (*Client, error) {
 
 	client := fitbitConf.Client(oauth2.NoContext, token)
 	fClient := &Client{
-		Client: client,
-		User:   newUserService(client),
+		Client:    client,
+		User:      newUserService(client),
+		Acivities: newActivityService(client),
 	}
 	fmt.Printf("TOKEN: %v\n", token.AccessToken)
 	return fClient, nil
