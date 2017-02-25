@@ -43,9 +43,9 @@ var fitbitConf = &oauth2.Config{
 }
 
 type Client struct {
-	Client    *http.Client
-	User      *UserService
-	Acivities *ActivityService
+	Client     *http.Client
+	User       *UserService
+	Activities *ActivityService
 }
 
 func NewFitbitClient() (*Client, error) {
@@ -60,37 +60,41 @@ func NewFitbitClient() (*Client, error) {
 		oauthCode = make(chan oauth2.Token)
 		chanError = make(chan error)
 
-		http.HandleFunc("/", handeAuth)
-		http.HandleFunc("/oauth", handleOauth)
+		code, _ := getServerlessAuthCode()
+		t, _ := fitbitConf.Exchange(oauth2.NoContext, code)
+		token = t
 
-		go func() {
-			http.ListenAndServe(":3000", nil)
-		}()
-		select {
-		case code := <-oauthCode:
-			fmt.Printf("YA LLEGOO %v", code)
-			prefs.Update(accessTokenString, code.AccessToken)
-			prefs.Update(expiryTokenString, code.Expiry.String())
-			prefs.Update(tokenTypeString, code.TokenType)
-			prefs.Update(refreshTokenString, code.RefreshToken)
-			token = &code
+		// http.HandleFunc("/", handeAuth)
+		// http.HandleFunc("/oauth", handleOauth)
 
-		case chanErr := <-chanError:
-			fmt.Printf("ERROR EN ALGUN LUGAR %s", chanErr)
-			return nil, fmt.Errorf("fitbit client: can't create token")
-		}
+		// go func() {
+		// 	http.ListenAndServe(":3000", nil)
+		// }()
+		// select {
+		// case code := <-oauthCode:
+		// 	fmt.Printf("YA LLEGOO %v", code)
+		prefs.Update(accessTokenString, token.AccessToken)
+		prefs.Update(expiryTokenString, token.Expiry.String())
+		prefs.Update(tokenTypeString, token.TokenType)
+		prefs.Update(refreshTokenString, token.RefreshToken)
+		// 	token = &code
+
+		// case chanErr := <-chanError:
+		// 	fmt.Printf("ERROR EN ALGUN LUGAR %s", chanErr)
+		// 	return nil, fmt.Errorf("fitbit client: can't create token")
+		// }
 	}
-	// fmt.Printf("TENGO UN TOKEN %v", token)
+	fmt.Printf("TENGO UN TOKEN %v", token.AccessToken)
 	// tokenSource := fitbitConf.TokenSource(oauth2.NoContext, token)
 	// transport := &oauth2.Transport{Source: ts}
 
 	client := fitbitConf.Client(oauth2.NoContext, token)
 	fClient := &Client{
-		Client:    client,
-		User:      newUserService(client),
-		Acivities: newActivityService(client),
+		Client:     client,
+		User:       newUserService(client),
+		Activities: newActivityService(client),
 	}
-	fmt.Printf("TOKEN: %v\n", token.AccessToken)
+	// fmt.Printf("TOKEN: %v\n", token.AccessToken)
 	return fClient, nil
 }
 
@@ -110,6 +114,17 @@ func handleOauth(w http.ResponseWriter, r *http.Request) {
 func handeAuth(w http.ResponseWriter, r *http.Request) {
 	url := fitbitConf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+func getServerlessAuthCode() (string, error) {
+	the_url := fitbitConf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	fmt.Printf("Go to: %s\n", the_url)
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		return "", fmt.Errorf("could not read from cli: %v", err)
+	}
+	// fmt.Println(response)
+	return response, nil
 }
 
 func getFitBitKeys(prefs *Preferences) (*oauth2.Token, error) {
