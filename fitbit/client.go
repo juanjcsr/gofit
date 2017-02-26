@@ -2,6 +2,7 @@ package fitbit
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -46,6 +47,7 @@ type Client struct {
 	Client     *http.Client
 	User       *UserService
 	Activities *ActivityService
+	Heart      *HeartService
 }
 
 func NewFitbitClient() (*Client, error) {
@@ -84,15 +86,30 @@ func NewFitbitClient() (*Client, error) {
 		// 	return nil, fmt.Errorf("fitbit client: can't create token")
 		// }
 	}
-	fmt.Printf("TENGO UN TOKEN %v", token.AccessToken)
+	fmt.Printf("TENGO UN TOKEN %v", token)
 	// tokenSource := fitbitConf.TokenSource(oauth2.NoContext, token)
 	// transport := &oauth2.Transport{Source: ts}
 
-	client := fitbitConf.Client(oauth2.NoContext, token)
+	tokenSource := fitbitConf.TokenSource(oauth2.NoContext, token)
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if newToken.AccessToken != token.AccessToken {
+		prefs.Update(accessTokenString, newToken.AccessToken)
+		prefs.Update(expiryTokenString, newToken.Expiry.String())
+		prefs.Update(tokenTypeString, newToken.TokenType)
+		prefs.Update(refreshTokenString, newToken.RefreshToken)
+	}
+
+	// client := fitbitConf.Client(oauth2.NoContext, token)
+	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	fClient := &Client{
 		Client:     client,
 		User:       newUserService(client),
 		Activities: newActivityService(client),
+		Heart:      newHeartService(client),
 	}
 	// fmt.Printf("TOKEN: %v\n", token.AccessToken)
 	return fClient, nil
