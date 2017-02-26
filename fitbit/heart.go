@@ -21,24 +21,39 @@ type HeartRateZones struct {
 	Value                int16           `json:"value"`
 	Datetime             string          `json:"dateTime"`
 }
+type HeartRateZonesIntraday struct {
+	CustomHeartRateZones []HeartRateZone `json:"customHeartRateZones"`
+	HeartRateZone        []HeartRateZone `json:"heartRateZones"`
+	RestingHeartRate     int16           `json:"restingHeartRate"`
+	Value                string          `json:"value"`
+	Datetime             string          `json:"dateTime"`
+}
+
+type HRValue struct {
+}
 
 type HeartValues struct {
-	DateTime string           `json:"dateTime"`
-	Values   []HeartRateZones `json:"value"`
+	DateTime string         `json:"dateTime"`
+	Values   HeartRateZones `json:"value"`
 }
 
 type ActivitiesHeartHolder struct {
-	HeartValues         []HeartValues             `json:"activities-heart"`
-	HeartValuesIntraday []ActivitiesHeartIntraday `json:"activities-heart-intraday"`
+	HeartValues         []HeartValues           `json:"activities-heart"`
+	HeartValuesIntraday ActivitiesHeartIntraday `json:"activities-heart-intraday"`
+}
+
+type ActivitiesHeartIntradayHolder struct {
+	HeartValues         []HeartRateZonesIntraday `json:"activities-heart"`
+	HeartValuesIntraday ActivitiesHeartIntraday  `json:"activities-heart-intraday"`
 }
 
 type HeartDataSet struct {
 	Time  string `json:"time"`
-	Value string `json:"value"`
+	Value int16  `json:"value"`
 }
 
 type ActivitiesHeartIntraday struct {
-	Dataset         []HeartDataSet `json:"activities-heart-intraday"`
+	Dataset         []HeartDataSet `json:"dataset"`
 	DatasetInterval int16          `json:"datasetInterval"`
 	DatasetType     string         `json:"datasetType"`
 }
@@ -53,7 +68,10 @@ func newHeartService(authedClient *http.Client) *HeartService {
 }
 
 const (
-	heartEndpoint = "https://api.fitbit.com/1/user/%s/activities/heart/date/%s/%s.json"
+	heartEndpoint          = "https://api.fitbit.com/1/user/%s/activities/heart/date/%s/%s.json"
+	heartDateRangeEndpoint = "https://api.fitbit.com/1/user/%s/activities/heart/date/%s/%s.json"
+	heartIntraEndpoint     = "https://api.fitbit.com/1/user/%s/activities/heart/date/%s/%s/%s.json"
+	heartIntraDayEndpoint  = "https://api.fitbit.com/1/user/%s/activities/heart/date/%s/1d/%s/time/%s/%s.json"
 )
 
 func (h *HeartService) GetHeartData(userID string, date string, period string) (*ActivitiesHeartHolder, error) {
@@ -70,4 +88,20 @@ func (h *HeartService) GetHeartData(userID string, date string, period string) (
 	}
 
 	return &hh, nil
+}
+
+func (h *HeartService) GetIntradayHeartData(userID, date, detail, start, end string) (*ActivitiesHeartIntradayHolder, error) {
+	// var url string
+	url := fmt.Sprintf(heartIntraDayEndpoint, userID, date, detail, start, end)
+	resp, err := h.client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(url)
+	defer resp.Body.Close()
+	var intra ActivitiesHeartIntradayHolder
+	if err := json.NewDecoder(resp.Body).Decode(&intra); err != nil {
+		return nil, fmt.Errorf("heart endpoint: %v", err)
+	}
+	return &intra, nil
 }
