@@ -115,6 +115,14 @@ func NewFitbitClient() (*Client, error) {
 	return fClient, nil
 }
 
+func createOrGetPreferences() (*Preferences, error) {
+	prefs := new(Preferences)
+	if _, err := prefs.Open(); err != nil {
+		return nil, fmt.Errorf("error opening prefs %v", err)
+	}
+	return prefs, nil
+}
+
 func handleOauth(w http.ResponseWriter, r *http.Request) {
 	// TODO: check for redirect state first
 	code := r.FormValue("code")
