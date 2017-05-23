@@ -86,7 +86,7 @@ func NewFitbitClient() (*Client, error) {
 		// 	return nil, fmt.Errorf("fitbit client: can't create token")
 		// }
 	}
-	fmt.Printf("TENGO UN TOKEN %v", token)
+	fmt.Printf("TENGO UN TOKEN %v", token.AccessToken)
 	// tokenSource := fitbitConf.TokenSource(oauth2.NoContext, token)
 	// transport := &oauth2.Transport{Source: ts}
 

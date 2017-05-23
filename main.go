@@ -1,6 +1,8 @@
 package main
 
-import "github.com/juanjcsr/gofit/fitbit"
+import (
+	"github.com/juanjcsr/gofit/fitbit"
+)
 
 func main() {
 	// client, _ := fitbit.NewFitbitClient()
