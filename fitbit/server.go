@@ -42,11 +42,11 @@ type FitServer struct {
 }
 
 func NewFitbitServer(port int16) {
-	prefs, err := createOrGetPreferences()
-	if err != nil {
-		log.Printf("server: could not open prefs file %v", prefs)
-	}
-	defer prefs.Close()
+	// prefs, err := createOrGetPreferences()
+	// if err != nil {
+	// 	log.Printf("server: could not open prefs file %v", prefs)
+	// }
+	// defer prefs.Close()
 
 	fitClient, err := NewFitbitClient()
 	if err != nil {
