@@ -28,8 +28,9 @@ var oauthToken *oauth2.Token
 var fitbitConf = &oauth2.Config{
 	ClientID:     os.Getenv("FITBIT_CLIENT"),
 	ClientSecret: os.Getenv("FITBIT_SECRET"),
-	RedirectURL:  "http://localhost:3000/oauth",
-	Endpoint:     fitbit.Endpoint,
+	//RedirectURL:  "http://localhost:3000/oauth",
+	RedirectURL: os.Getenv("FITBIT_REDIRECT_URL"),
+	Endpoint:    fitbit.Endpoint,
 	Scopes: []string{
 		"activity",
 		"heartrate",
