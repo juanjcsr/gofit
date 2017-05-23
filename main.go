@@ -12,5 +12,5 @@ func main() {
 	// 	fmt.Printf("error getting user: %s", err)
 	// }
 	// fmt.Printf("user: %v", resp)
-	fitbit.NewFitbitServer(8080)
+	fitbit.NewFitbitServer(3000)
 }
