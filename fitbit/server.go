@@ -37,7 +37,8 @@ var fitbitServerConf = &oauth2.Config{
 }
 
 type FitServer struct {
-	client *Client
+	client       *Client
+	notification *Subscriber
 }
 
 func NewFitbitServer(port int16) {
@@ -57,6 +58,15 @@ func NewFitbitServer(port int16) {
 
 	address := fmt.Sprintf(":%d", port)
 	router := mux.NewRouter()
+
+	verificationCode := os.Getenv("FITBIT_NOTIFY_VERIFICATION")
+	fmt.Println("\n " + verificationCode)
+	suscriber, err := newSubscriber(fitClient.Client, router, verificationCode)
+	if err != nil {
+		log.Fatalf("could not create subscriber endpoint: %v", err)
+	}
+	fs.notification = suscriber
+
 	router.HandleFunc("/api/hola", fs.getHolaFunc)
 	router.HandleFunc("/api/activities", fs.getActivitiesLog)
 	log.Fatal(http.ListenAndServe(address, router))
