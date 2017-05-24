@@ -1,6 +1,7 @@
 package fitbit
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	"fmt"
@@ -48,7 +49,9 @@ func (s *Subscriber) getFitBitNotification(w http.ResponseWriter, r *http.Reques
 				fmt.Fprintf(w, "%s: %v", "error: ", err)
 			}
 			defer resp.Body.Close()
-			fmt.Fprintf(w, "%s", resp.Body)
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
+			bodyString := string(bodyBytes)
+			fmt.Fprintf(w, "%s", bodyString)
 
 		}
 	case "POST":
