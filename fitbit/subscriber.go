@@ -42,6 +42,15 @@ func (s *Subscriber) getFitBitNotification(w http.ResponseWriter, r *http.Reques
 			}
 
 		}
+		if l := r.URL.Query().Get("list"); l != "" {
+			resp, err := s.client.Get("https://api.fitbit.com/1/user/-/apiSubscriptions.json")
+			if err != nil {
+				fmt.Fprintf(w, "%s: %v", "error: ", err)
+			}
+			defer resp.Body.Close()
+			fmt.Fprintf(w, "%s", resp.Body)
+
+		}
 	case "POST":
 
 	}
