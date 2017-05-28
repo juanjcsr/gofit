@@ -8,9 +8,9 @@ import (
 )
 
 func DB() (*gorm.DB, error) {
-	db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=gofit")
+	db, err := gorm.Open("postgres", "host=0.0.0.0 user=postgres password=password  dbname=gofit sslmode=disable")
 	if err != nil {
-		return nil, fmt.Errorf("could not create database")
+		return nil, fmt.Errorf("could not create database: %v", err)
 	}
 	return db, nil
 }

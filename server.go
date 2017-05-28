@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	fitbit "github.com/juanjcsr/gofit/fitbit"
 	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
 	"github.com/pressly/chi/render"
 	"golang.org/x/oauth2"
 	ofb "golang.org/x/oauth2/fitbit"
@@ -61,6 +62,9 @@ func NewFitbitServer(port int16) {
 
 	address := fmt.Sprintf(":%d", port)
 	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
 
 	// redirectURL := getLoginURL()
 	// verificationCode := os.Getenv("FITBIT_NOTIFY_VERIFICATION")

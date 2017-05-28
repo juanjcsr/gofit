@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"fmt"
@@ -12,8 +13,9 @@ import (
 
 type User struct {
 	gorm.Model
-	Email  string `json:"email" gorm:"unique_index;"`
-	Tokens []Token
+	Email    string `json:"email" gorm:"unique_index;"`
+	Username string `json:"username" gorm:"unique_index"`
+	Tokens   []Token
 }
 
 type Token struct {
@@ -30,9 +32,25 @@ type UserORM struct {
 	db *gorm.DB
 }
 
+type userCtxKey string
+
+var (
+	contextUserKey = userCtxKey("token")
+)
+
+func (u userCtxKey) String() string {
+	return "user ctx " + string(u)
+}
+
 func userRouter() chi.Router {
 	r := chi.NewRouter()
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 	r.Post("/", createUserRequest)
+	r.Route("/token/:username", func(r chi.Router) {
+		r.Use(UserCtx)
+		r.Get("/", getOrCreateUserToken)
+	})
+
 	// r.Get("/user/:userID", u.getUser)
 	return r
 }
@@ -62,11 +80,48 @@ func createUserRequest(w http.ResponseWriter, r *http.Request) {
 	render.Render(w, r, NewUserResponse(user))
 }
 
+func getOrCreateUserToken(w http.ResponseWriter, r *http.Request) {
+	// user := r.Context().Value(contextUserKey).(uint)
+	u := r.Context().Value(contextUserKey).(*User)
+	fmt.Printf("UUUUUUUU %v", u)
+	var tokens []Token
+	var count int
+	db, _ := DB()
+	defer db.Close()
+	db.Model(&u).Related(&tokens).Count(count)
+	if count == 0 {
+		// show url to fitbit
+	}
+	fmt.Fprintf(w, "golaaa %v", tokens)
+}
+
+func UserCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userEmail := chi.URLParam(r, "username")
+		fmt.Printf("username: %s\n", userEmail)
+		var user User
+		db, _ := DB()
+		defer db.Close()
+		if db.First(&user, "username = ?", userEmail).RecordNotFound() {
+			render.Render(w, r, ErrInvalidRequest(fmt.Errorf("no such user %s", userEmail)))
+			return
+		}
+		fmt.Printf("usuario: %v", user)
+		//ctx := context.WithValue(r.Context(), contextUserKey, user.ID)
+		ctx := context.WithValue(r.Context(), contextUserKey, &user)
+		// ctx = context.WithValue(ctx, "user", &user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 type UserRequest struct {
 	*User
 }
 
 func (u *UserRequest) Bind(r *http.Request) error {
+	if u.Username == "" {
+		return fmt.Errorf("username cannot be empty")
+	}
 	return nil
 }
 

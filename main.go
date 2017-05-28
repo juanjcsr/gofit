@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/juanjcsr/gofit/fitbit"
+	"log"
 )
 
 func main() {
@@ -11,6 +11,10 @@ func main() {
 	// if err != nil {
 	// 	fmt.Printf("error getting user: %s", err)
 	// }
-	// fmt.Printf("user: %v", resp)
-	fitbit.NewFitbitServer(3000)
+	db, err := DB()
+	if err != nil {
+		log.Fatalf("could not open DB: %v", err)
+	}
+	db.AutoMigrate(&User{}, &Token{})
+	NewFitbitServer(3000)
 }
