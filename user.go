@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	fitbit "github.com/juanjcsr/gofit/fitbit"
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/render"
 )
@@ -90,7 +91,9 @@ func getOrCreateUserToken(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	db.Model(&u).Related(&tokens).Count(count)
 	if count == 0 {
-		// show url to fitbit
+		url := fitbit.FetchFitbitLoginURL("https://api.jcsr.me/oauth", u.Email)
+		render.Status(r, http.StatusPreconditionRequired)
+		render.Render(w, r, NewEmptyTokenResponse(url))
 	}
 	fmt.Fprintf(w, "golaaa %v", tokens)
 }
@@ -135,5 +138,18 @@ func NewUserResponse(user *User) *UserResponse {
 }
 
 func (ur *UserResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+type EmptyTokenResponse struct {
+	URL string `json:"goto"`
+}
+
+func NewEmptyTokenResponse(url string) *EmptyTokenResponse {
+	resp := &EmptyTokenResponse{URL: url}
+	return resp
+}
+
+func (etr *EmptyTokenResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }

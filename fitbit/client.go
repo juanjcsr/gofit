@@ -25,12 +25,17 @@ var chanError chan error
 
 var oauthToken *oauth2.Token
 
+var (
+	clientID     = os.Getenv("FITBIT_CLIENT")
+	clientSecret = os.Getenv("FITBIT_SECRET")
+)
+
 var fitbitConf = &oauth2.Config{
 	ClientID:     os.Getenv("FITBIT_CLIENT"),
 	ClientSecret: os.Getenv("FITBIT_SECRET"),
 	//RedirectURL:  "http://localhost:3000/oauth",
-	RedirectURL: os.Getenv("FITBIT_REDIRECT_URL"),
-	Endpoint:    fitbit.Endpoint,
+	// RedirectURL: os.Getenv("FITBIT_REDIRECT_URL"),
+	Endpoint: fitbit.Endpoint,
 	Scopes: []string{
 		"activity",
 		"heartrate",
@@ -143,14 +148,38 @@ func handeAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func getServerlessAuthCode() (string, error) {
-	the_url := fitbitConf.AuthCodeURL("state", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to: %s\n", the_url)
+	theURL := fitbitConf.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	fmt.Printf("Go to: %s\n", theURL)
 	var response string
 	if _, err := fmt.Scanln(&response); err != nil {
 		return "", fmt.Errorf("could not read from cli: %v", err)
 	}
 	// fmt.Println(response)
 	return response, nil
+}
+
+func FetchFitbitLoginURL(redirect string, state string) string {
+	fmt.Printf("CLIENT_ID: %s", clientID)
+	conf := &oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirect,
+		// RedirectURL: os.Getenv("FITBIT_REDIRECT_URL"),
+		Endpoint: fitbit.Endpoint,
+		Scopes: []string{
+			"activity",
+			"heartrate",
+			"location",
+			"nutrition",
+			"profile",
+			"settings",
+			"sleep",
+			"social",
+			"weight",
+		},
+	}
+	url := conf.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	return url
 }
 
 func getFitBitKeys(prefs *Preferences) (*oauth2.Token, error) {
